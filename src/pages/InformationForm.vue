@@ -125,17 +125,30 @@ export default {
     },
 
     getFormHeading() {
-      const formHeading = {
+      let formHeading = "";
+      if (this.isUserDataIsComplete()) {
+        formHeading = {
+          en: "Thanks for completing your profile!",
+          hi: "अपना प्रोफ़ाइल पूरा करने के लिए धन्यवाद"
+        }
+      } else {
+        formHeading = {
         en: "Complete your Profile",
         hi: "अपनी प्रोफाइल पूर्ण करें",
       };
+      }
+
 
       return formHeading[this.getLocale];
     },
 
     /** Returns button text */
     startSessionText() {
-      return this.getLocale == "en" ? "Start Session" : "सत्र शुरू करें";
+      if (this.getLocale == "en" && this.$store.state.redirection == true) {
+        return "Start Session"
+      }
+      else if (this.getLocale == "hi" && this.$store.state.redirection == true) return "सत्र शुरू करें";
+      else if (this.$store.state.redirection == false) return "No Session Available!"
     },
   },
   methods: {
@@ -196,9 +209,11 @@ export default {
         }
       });
 
-      return isUserDataComplete
-        ? (this.buttonDisabled = false)
-        : (this.buttonDisabled = true);
+      if (isUserDataComplete && this.$store.state.redirection == true) {
+        this.buttonDisabled = false;
+      } else this.buttonDisabled = true;
+
+      return isUserDataComplete;
     },
 
     /** updates user data based on user input */
@@ -215,6 +230,9 @@ export default {
 
     /** redirects to destination */
     redirect() {
+      if (this.$store.state.redirection == false) {
+        return; // no redirection
+      }
       if (
         redirectToDestination(
           this.$store.state.sessionData.purpose.params,
